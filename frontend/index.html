@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; color: #326ce5; }
+        .subtitle { color: #888; margin-bottom: 30px; }
+        .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 24px; width: 400px; }
+        .card h2 { color: #326ce5; margin-bottom: 12px; font-size: 1.2rem; }
+        .label { color: #888; font-size: 0.85rem; }
+        .value { color: #e94560; font-family: monospace; font-size: 1.1rem; margin-bottom: 8px; }
+        .status { padding: 6px 14px; border-radius: 20px; display: inline-block; margin-top: 8px; font-size: 0.9rem; }
+        .status.ok { background: #1b4332; color: #52b788; }
+        .status.err { background: #3d0000; color: #e94560; }
+        button { background: #326ce5; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 20px; }
+        button:hover { background: #2856b8; }
+        .info { color: #666; font-size: 0.8rem; margin-top: 30px; max-width: 600px; text-align: center; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <h1>Kubernetes Demo</h1>
+    <p class="subtitle">Microservices Architecture in Action</p>
+
+    <div class="cards">
+        <div class="card">
+            <h2>Frontend Service</h2>
+            <p class="label">Service Type</p>
+            <p class="value">NodePort (externally accessible)</p>
+            <p class="label">Served By</p>
+            <p class="value">nginx container</p>
+            <span class="status ok">Running</span>
+        </div>
+
+        <div class="card">
+            <h2>Backend API Service</h2>
+            <p class="label">Service Type</p>
+            <p class="value">ClusterIP (internal only)</p>
+            <p class="label">Backend Hostname (Pod)</p>
+            <p class="value" id="hostname">fetching...</p>
+            <p class="label">API Version</p>
+            <p class="value" id="version">fetching...</p>
+            <p class="label">Message</p>
+            <p class="value" id="message">fetching...</p>
+            <span class="status" id="backend-status">Checking...</span>
+        </div>
+    </div>
+
+    <button onclick="fetchBackend()">Refresh Backend Info</button>
+
+    <p class="info">
+        The frontend uses a <strong>NodePort</strong> service so you can access it from outside the cluster.
+        The backend uses a <strong>ClusterIP</strong> service, reachable only within the cluster.
+        The frontend's nginx reverse-proxies <code>/api/</code> requests to the backend service.
+        Try scaling the backend deployment and refreshing to see different pod hostnames!
+    </p>
+
+    <script>
+        async function fetchBackend() {
+            try {
+                const res = await fetch('/api/info');
+                const data = await res.json();
+                document.getElementById('hostname').textContent = data.hostname;
+                document.getElementById('version').textContent = data.version;
+                document.getElementById('message').textContent = data.message;
+                const s = document.getElementById('backend-status');
+                s.textContent = 'Connected'; s.className = 'status ok';
+            } catch (e) {
+                document.getElementById('hostname').textContent = 'unavailable';
+                document.getElementById('version').textContent = '-';
+                document.getElementById('message').textContent = '-';
+                const s = document.getElementById('backend-status');
+                s.textContent = 'Disconnected'; s.className = 'status err';
+            }
+        }
+        fetchBackend();
+    </script>
+</body>
+</html>

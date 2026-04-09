@@ -1,0 +1,14 @@
+# NodePort service: accessible from OUTSIDE the cluster
+# This is how users reach the frontend from their browser
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: NodePort            # Externally accessible
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080       # Access via <node-ip>:30080
